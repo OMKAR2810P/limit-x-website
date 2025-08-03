@@ -1,5 +1,6 @@
 // This is the updated code for your secure serverless function.
 // Replace the old code in 'netlify/functions/generate.js' with this.
+const fetch = require('node-fetch');
 
 // The Gemini API schema for the expected response
 const schema = {
@@ -98,15 +99,3 @@ exports.handler = async function(event, context) {
         };
     }
 };
-```
-
-### **How to Update Your Website**
-
-1.  **Go to your GitHub repository** (`limit-x-website`).
-2.  Navigate to the `netlify/functions/` folder.
-3.  Click on the `generate.js` file to open it.
-4.  Click the **pencil icon** (Edit this file) in the top right.
-5.  **Delete all the old code** in the editor and **paste the new code** from the canvas above.
-6.  Scroll to the bottom and click the green **"Commit changes"** button.
-
-That's it! Netlify will automatically detect the change in your GitHub repository and redeploy your website with the updated logic. Now, when you enter a budget like "4k", it will correctly understand it as ₹4,0
