@@ -1,13 +1,13 @@
-// This is the code for your secure serverless function.
-// Save this in a file named: netlify/functions/generate.js
+// This is the updated code for your secure serverless function.
+// Replace the old code in 'netlify/functions/generate.js' with this.
 
 // The Gemini API schema for the expected response
 const schema = {
     type: "OBJECT",
     properties: {
         buildName: { "type": "STRING", "description": "A creative and fitting name for the PC build." },
-        estimatedPrice: { "type": "STRING", "description": "The total estimated price of the build, in the currency requested by the user (e.g., INR for India)." },
-        reasoning: { "type": "STRING", "description": "A brief explanation of why these components were chosen for the user's needs." },
+        estimatedPrice: { "type": "STRING", "description": "The total estimated price of the build, in Indian Rupees (INR)." },
+        reasoning: { "type": "STRING", "description": "A brief explanation of why these components were chosen for the user's needs and budget, considering Indian market prices." },
         components: {
             type: "ARRAY",
             description: "A list of the core PC components.",
@@ -46,10 +46,20 @@ exports.handler = async function(event, context) {
 
         const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${API_KEY}`;
 
+        // *** THIS IS THE MODIFIED PROMPT ***
+        // We are giving the AI much clearer instructions about the user's location and currency.
+        const systemInstruction = `
+            You are an expert PC builder for a shop in India. 
+            VERY IMPORTANT: All cost estimates and budgets MUST be in Indian Rupees (INR) and formatted like "₹1,50,000".
+            If a user provides an ambiguous budget like "4k" or "80k", interpret it as Indian Rupees (e.g., ₹4,000 or ₹80,000), not USD.
+            Base your component choices on availability and pricing within the Indian market.
+            Now, generate a PC component list based on this user's request: "${prompt}".
+        `;
+
         // Construct the payload for the Gemini API
         const payload = {
             contents: [{
-                parts: [{ text: `Generate a PC component list for a user based on this request: "${prompt}". Pay close attention to any mention of currency or location (like India/INR). Provide the estimated price in the user's local currency. Also give a creative name for the build, a brief reasoning for your choices, and a list of core components.` }]
+                parts: [{ text: systemInstruction }]
             }],
             generationConfig: {
                 responseMimeType: "application/json",
@@ -88,3 +98,15 @@ exports.handler = async function(event, context) {
         };
     }
 };
+```
+
+### **How to Update Your Website**
+
+1.  **Go to your GitHub repository** (`limit-x-website`).
+2.  Navigate to the `netlify/functions/` folder.
+3.  Click on the `generate.js` file to open it.
+4.  Click the **pencil icon** (Edit this file) in the top right.
+5.  **Delete all the old code** in the editor and **paste the new code** from the canvas above.
+6.  Scroll to the bottom and click the green **"Commit changes"** button.
+
+That's it! Netlify will automatically detect the change in your GitHub repository and redeploy your website with the updated logic. Now, when you enter a budget like "4k", it will correctly understand it as ₹4,0
