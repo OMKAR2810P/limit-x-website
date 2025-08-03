@@ -1,8 +1,9 @@
-// This is the updated code for your secure serverless function.
-// Replace the old code in 'netlify/functions/generate.js' with this.
+// This is the code for your secure serverless function.
+// Save this in a file named: netlify/functions/generate.js
 const fetch = require('node-fetch');
 
 // The Gemini API schema for the expected response
+// *** MODIFICATION: Added an optional 'price' field for each component ***
 const schema = {
     type: "OBJECT",
     properties: {
@@ -16,7 +17,8 @@ const schema = {
                 type: "OBJECT",
                 properties: {
                     type: { "type": "STRING", "description": "The type of component (e.g., CPU, GPU, Motherboard)." },
-                    name: { "type": "STRING", "description": "The specific model name of the component." }
+                    name: { "type": "STRING", "description": "The specific model name of the component." },
+                    price: { "type": "STRING", "description": "The estimated price of the individual component in INR. Only include this if the user specifically asks for per-component pricing." }
                 },
                 required: ["type", "name"]
             }
@@ -48,12 +50,15 @@ exports.handler = async function(event, context) {
         const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${API_KEY}`;
 
         // *** THIS IS THE MODIFIED PROMPT ***
-        // We are giving the AI much clearer instructions about the user's location and currency.
+        // Added a specific instruction to handle per-component pricing requests.
         const systemInstruction = `
             You are an expert PC builder for a shop in India. 
             VERY IMPORTANT: All cost estimates and budgets MUST be in Indian Rupees (INR) and formatted like "₹1,50,000".
             If a user provides an ambiguous budget like "4k" or "80k", interpret it as Indian Rupees (e.g., ₹4,000 or ₹80,000), not USD.
             Base your component choices on availability and pricing within the Indian market.
+            
+            CRITICAL INSTRUCTION: If the user's request contains phrases like "price of each component", "component pricing", or "show price of each", you MUST include the estimated 'price' for each item in the components list. If the user does not ask for this, you MUST omit the 'price' field for each component.
+
             Now, generate a PC component list based on this user's request: "${prompt}".
         `;
 
