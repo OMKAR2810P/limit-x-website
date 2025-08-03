@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LIMIT-X PC Building & Laptop Repair</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+        }
+        .font-orbitron {
+            font-family: 'Orbitron', sans-serif;
+        }
+        /* Background pattern styling */
+        .bg-pattern {
+            background-color: #000000;
+            background-image:
+                linear-gradient(rgba(255, 165, 0, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 165, 0, 0.05) 1px, transparent 1px),
+                linear-gradient(rgba(255, 215, 0, 0.03) 2px, transparent 2px),
+                linear-gradient(90deg, rgba(255, 215, 0, 0.03) 2px, transparent 2px);
+            background-size: 100px 100px, 100px 100px, 20px 20px, 20px 20px;
+            background-position: -2px -2px, -2px -2px, -1px -1px, -1px -1px;
+        }
+        /* Custom scrollbar for a better aesthetic */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1a1a1a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #ff8c00;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #ffa500;
+        }
+        /* Simple spinner animation */
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.2);
+            border-left-color: #ffa500;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-gray-900 flex items-center justify-center min-h-screen p-4">
+
+    <!-- Main Container -->
+    <div class="w-full max-w-6xl mx-auto bg-black rounded-lg shadow-2xl bg-pattern overflow-hidden">
+        <div class="text-white flex flex-col items-center justify-center p-4 md:p-8">
+
+            <!-- Main Title -->
+            <h1 class="font-orbitron font-black text-5xl sm:text-6xl md:text-7xl lg:text-8xl tracking-wider text-center">
+                <span class="bg-clip-text text-transparent bg-gradient-to-r from-amber-400 via-orange-500 to-amber-500">
+                    LIMIT-X
+                </span>
+            </h1>
+
+            <!-- Separator Line -->
+            <div class="w-2/3 md:w-1/2 h-1 my-4 bg-gradient-to-r from-transparent via-orange-600 to-transparent"></div>
+
+            <!-- Services Subtitle -->
+            <p class="text-center text-lg sm:text-xl md:text-2xl font-light text-gray-300 tracking-wide">
+                Custom PC Builds <span class="text-orange-500 mx-2">&#9679;</span> Expert Laptop Repair & Service
+            </p>
+
+            <!-- Gemini-Powered PC Builder Section -->
+            <div id="pc-builder" class="w-full max-w-4xl mt-10 p-6 bg-gray-900/50 backdrop-blur-sm rounded-lg border border-gray-700">
+                <h2 class="font-orbitron text-2xl md:text-3xl text-center font-bold text-orange-400 mb-4">✨ PC Build Recommender</h2>
+                <p class="text-center text-gray-400 mb-6">Describe your dream PC. Mention your main uses (e.g., gaming, streaming, video editing) and your budget in INR.</p>
+
+                <div class="flex flex-col gap-4">
+                    <textarea id="userInput" class="w-full h-24 p-3 bg-gray-800 border border-gray-600 rounded-md text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 resize-none" placeholder="e.g., I need a gaming PC for Valorant and streaming. My budget is around ₹80,000 INR."></textarea>
+                    <button id="generateBtn" class="w-full sm:w-auto mx-auto px-8 py-3 bg-gradient-to-r from-orange-500 to-amber-500 text-white font-bold rounded-md hover:from-orange-600 hover:to-amber-600 transition-all duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-orange-500">
+                        Generate My Build
+                    </button>
+                </div>
+
+                <!-- Results Area -->
+                <div id="results" class="mt-8">
+                    <!-- Loading spinner will be injected here -->
+                    <!-- Results will be injected here -->
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // --- DOM Element References ---
+        const generateBtn = document.getElementById('generateBtn');
+        const userInput = document.getElementById('userInput');
+        const resultsDiv = document.getElementById('results');
+
+        // --- Netlify Serverless Function Endpoint ---
+        // This is the new, secure endpoint we will call.
+        const SECURE_API_URL = '/.netlify/functions/generate';
+
+        /**
+         * Shows a loading spinner in the results area.
+         */
+        function showLoading() {
+            resultsDiv.innerHTML = `
+                <div class="flex flex-col items-center justify-center gap-4 mt-6">
+                    <div class="spinner"></div>
+                    <p class="text-orange-400 font-semibold">Generating your custom build...</p>
+                </div>
+            `;
+        }
+
+        /**
+         * Displays an error message in the results area.
+         * @param {string} message - The error message to display.
+         */
+        function showError(message) {
+            resultsDiv.innerHTML = `
+                <div class="bg-red-900/50 border border-red-500 text-red-300 p-4 rounded-lg text-center">
+                    <p class="font-bold">An error occurred</p>
+                    <p>${message}</p>
+                </div>
+            `;
+        }
+
+        /**
+         * Renders the generated PC build recommendation in the results area.
+         * @param {object} buildData - The parsed JSON object containing the build details.
+         */
+        function displayResults(buildData) {
+            // Generate the HTML for the list of components
+            const componentsHTML = buildData.components.map(comp => `
+                <li class="flex justify-between items-center p-3 border-b border-gray-700">
+                    <span class="font-bold text-orange-400">${comp.type}:</span>
+                    <span class="text-gray-300 text-right">${comp.name}</span>
+                </li>
+            `).join('');
+
+            // Set the final HTML for the results area
+            resultsDiv.innerHTML = `
+                <div class="bg-gray-800/60 p-6 rounded-lg border border-gray-700 animate-fade-in">
+                    <h3 class="font-orbitron text-2xl text-center font-bold text-amber-400 mb-2">${buildData.buildName}</h3>
+                    <p class="text-center text-xl font-semibold text-white mb-4">Estimated Price: ${buildData.estimatedPrice}</p>
+                    <p class="text-gray-400 italic text-center mb-6">"${buildData.reasoning}"</p>
+                    <ul class="bg-gray-900/50 rounded-lg overflow-hidden border border-gray-700">
+                        ${componentsHTML}
+                    </ul>
+                </div>
+                <style>
+                    @keyframes fade-in {
+                        from { opacity: 0; transform: translateY(10px); }
+                        to { opacity: 1; transform: translateY(0); }
+                    }
+                    .animate-fade-in {
+                        animation: fade-in 0.5s ease-out forwards;
+                    }
+                </style>
+            `;
+        }
+
+        /**
+         * Fetches the PC build recommendation by calling our secure Netlify function.
+         */
+        async function generateBuild() {
+            const promptText = userInput.value.trim();
+            if (!promptText) {
+                showError("Please describe your desired PC build first.");
+                return;
+            }
+
+            showLoading();
+            generateBtn.disabled = true;
+            generateBtn.classList.add('opacity-50', 'cursor-not-allowed');
+
+            try {
+                // Call our own backend function instead of Google's API directly
+                const response = await fetch(SECURE_API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt: promptText }) // Send the user's prompt to our function
+                });
+
+                if (!response.ok) {
+                    const errorResult = await response.json();
+                    throw new Error(errorResult.error || 'The request to the server failed.');
+                }
+
+                const buildData = await response.json();
+                displayResults(buildData);
+
+            } catch (error) {
+                console.error('Error:', error);
+                showError(error.message);
+            } finally {
+                // Re-enable the button after the process is complete
+                generateBtn.disabled = false;
+                generateBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
+        }
+
+        // --- Event Listener ---
+        generateBtn.addEventListener('click', generateBuild);
+
+    </script>
+</body>
+</html>
