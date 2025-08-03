@@ -102,7 +102,6 @@
         const resultsDiv = document.getElementById('results');
 
         // --- Netlify Serverless Function Endpoint ---
-        // This is the new, secure endpoint we will call.
         const SECURE_API_URL = '/.netlify/functions/generate';
 
         /**
@@ -135,13 +134,22 @@
          * @param {object} buildData - The parsed JSON object containing the build details.
          */
         function displayResults(buildData) {
-            // Generate the HTML for the list of components
-            const componentsHTML = buildData.components.map(comp => `
-                <li class="flex justify-between items-center p-3 border-b border-gray-700">
-                    <span class="font-bold text-orange-400">${comp.type}:</span>
-                    <span class="text-gray-300 text-right">${comp.name}</span>
-                </li>
-            `).join('');
+            // *** THIS IS THE MODIFIED PART ***
+            // It now checks if a component has a price and displays it if it exists.
+            const componentsHTML = buildData.components.map(comp => {
+                // Conditionally create the price part of the HTML
+                const priceHTML = comp.price ? `<span class="text-amber-400 font-semibold">${comp.price}</span>` : '';
+
+                return `
+                    <li class="flex justify-between items-center p-3 border-b border-gray-700">
+                        <div class="text-left">
+                            <span class="font-bold text-orange-400">${comp.type}:</span>
+                            <span class="text-gray-300 ml-2">${comp.name}</span>
+                        </div>
+                        ${priceHTML}
+                    </li>
+                `;
+            }).join('');
 
             // Set the final HTML for the results area
             resultsDiv.innerHTML = `
